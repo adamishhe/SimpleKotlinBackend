@@ -1,60 +1,63 @@
 package org.example.controller
 
+import jakarta.validation.Valid
+import org.example.dto.CreateTaskDto
+import org.example.dto.CreateUserDto
 import org.example.dto.TaskDto
 import org.example.dto.TaskStatus
+import org.example.dto.UpdateTaskStatusDto
 import org.example.dto.UserDto
 import org.example.service.UserService
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.autoconfigure.security.SecurityProperties
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-class UserContorller (
-    val userService: UserService
+class UserController (
+    private val userService: UserService
 ) {
     @PostMapping("/users")
-    fun createUser(user : UserDto) : UserDto {
-        return userService.createUser(user)
+    @ResponseStatus(HttpStatus.CREATED)
+    fun createUser(@Valid @RequestBody newUser : CreateUserDto) : UserDto {
+        return userService.createUser(newUser)
     }
 
-    @PostMapping("/users/{id}/tasks")
-    fun createTask(task : TaskDto, @PathVariable userId : UUID) : TaskDto {
-        return userService.createTask(task, userId)
-    }
-
-    @GetMapping("/users/{userId}/tasks")
-    fun getTasks(userId : UUID ) : List <TaskDto> {
-        return userService.getTasks(userId)
-    }
-
-    @GetMapping("/users/{userId}/tasks")
-    fun getTasksSortedByStatus(userId : UUID ) : List <TaskDto> {
-        return userService.getTasksSortedByStatus(userId)
+    @PostMapping("/users/{userId}/tasks")
+    @ResponseStatus(HttpStatus.CREATED)
+    fun createTask(@Valid @RequestBody newTask : CreateTaskDto,
+                         @PathVariable userId : UUID) : TaskDto {
+        return userService.createTask(newTask, userId)
     }
 
     @GetMapping("/users/{userId}/tasks")
-    fun getTasksSortedByPriority(userId : UUID ) : List <TaskDto> {
-        return userService.getTasksSortedByPriority(userId)
-    }
-
-    @GetMapping("/users/{userId}/tasks")
-    fun getTasksSortedByCreatedAt(userId : UUID ) : List <TaskDto> {
-        return userService.getTasksSortedByCreatedAt(userId)
+    fun getTasks(
+                    @PathVariable userId : UUID,
+                    @RequestParam(required = false) sortBy: String?) : List <TaskDto> {
+        return when (sortBy) {
+            "status" -> userService.getTasksSortedByStatus(userId)
+            "priority" -> userService.getTasksSortedByPriority(userId)
+            "createdAt" -> userService.getTasksSortedByCreatedAt(userId)
+            else -> userService.getTasks(userId)
+        }
     }
 
     @PatchMapping("/tasks/{taskId}/status")
-    fun patchTask(taskId : UUID, status : TaskStatus ) : TaskDto {
-        return userService.patchTask(taskId, status)
+    fun patchTask(@PathVariable taskId : UUID,
+                        @Valid @RequestBody newStatusDto : UpdateTaskStatusDto) : TaskDto {
+        return userService.patchTask(taskId, newStatusDto)
     }
 
-    @DeleteMapping("/tasks/{userId}/tasks/completed")
-    fun deleteDoneTasks(userId : UUID) {
+    @DeleteMapping("/users/{userId}/tasks/completed")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun deleteDoneTasks(@PathVariable userId : UUID) {
         userService.deleteDoneTasks(userId)
     }
 }

@@ -1,4 +1,5 @@
 package org.example.exception.exceptions
 
-class EmailAlreadyExistsException {
-}
+class EmailAlreadyExistsException(
+    message: String = "Пользователь с таким email уже существует"
+) : RuntimeException(message)

@@ -23,7 +23,7 @@ class TaskModel(
     @Column(name = "task_id", nullable = false, unique = true)
     var taskId: UUID,
 
-    @Column(name = "title", nullable = false, length = 300)
+    @Column(name = "title", nullable = false, length = 100)
     var title: String,
 
     @Enumerated(EnumType.STRING)

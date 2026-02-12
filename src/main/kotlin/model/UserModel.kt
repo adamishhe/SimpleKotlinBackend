@@ -20,10 +20,7 @@ class UserModel (
     var email : String,
 
     @Column(name = "created_at", nullable = false)
-    var createdAt : LocalDateTime = LocalDateTime.now(),
-
-    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var tasks : MutableList<TaskModel> = mutableListOf()
+    var createdAt : LocalDateTime = LocalDateTime.now()
     ) {
     constructor(email: String) : this(
         userId = UUID.randomUUID(),
